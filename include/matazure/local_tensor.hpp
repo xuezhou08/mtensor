@@ -1,5 +1,6 @@
 #pragma once
 
+#include <matazure/layout.hpp>
 #include <matazure/meta.hpp>
 
 namespace matazure {
@@ -8,15 +9,15 @@ namespace matazure {
  * @brief convert array index to linear index by first marjor
  * @param id array index
  * @param stride tensor stride
- * @param first_major
+ * @param column_major_layout<rank>
  * @return linear index
  */
-template <int_t _Rank>
-inline MATAZURE_GENERAL typename pointi<_Rank>::value_type index2offset(const pointi<_Rank>& id,
-                                                                        const pointi<_Rank>& stride,
-                                                                        first_major) {
-    typename pointi<_Rank>::value_type offset = id[0];
-    for (int_t i = 1; i < _Rank; ++i) {
+template <int_t rank>
+inline MATAZURE_GENERAL typename pointi<rank>::value_type index2offset(const pointi<rank>& id,
+                                                                       const pointi<rank>& stride,
+                                                                       column_major_layout<rank>) {
+    typename pointi<rank>::value_type offset = id[0];
+    for (int_t i = 1; i < rank; ++i) {
         offset += id[i] * stride[i - 1];
     }
 
@@ -27,14 +28,15 @@ inline MATAZURE_GENERAL typename pointi<_Rank>::value_type index2offset(const po
  * @brief convert array index to linear index by first marjor
  * @param offset linear index
  * @param stride the stride of tensor
- * @param first_major
+ * @param column_major_layout<rank>
  * @return array index
  */
-template <int_t _Rank>
-inline MATAZURE_GENERAL pointi<_Rank> offset2index(typename pointi<_Rank>::value_type offset,
-                                                   const pointi<_Rank>& stride, first_major) {
-    pointi<_Rank> id;
-    for (int_t i = _Rank - 1; i > 0; --i) {
+template <int_t rank>
+inline MATAZURE_GENERAL pointi<rank> offset2index(typename pointi<rank>::value_type offset,
+                                                  const pointi<rank>& stride,
+                                                  column_major_layout<rank>) {
+    pointi<rank> id;
+    for (int_t i = rank - 1; i > 0; --i) {
         id[i] = offset / stride[i - 1];
         offset = offset % stride[i - 1];
     }
@@ -134,7 +136,7 @@ class local_tensor {
      * @return element const reference
      */
     MATAZURE_GENERAL constexpr const_reference operator()(const pointi<rank>& idx) const {
-        return (*this)[index2offset(idx, stride(), first_major{})];
+        return (*this)[index2offset(idx, stride(), column_major_layout<rank>{})];
     }
 
     /**
@@ -143,7 +145,7 @@ class local_tensor {
      * @return element reference
      */
     MATAZURE_GENERAL reference operator()(const pointi<rank>& idx) {
-        return (*this)[index2offset(idx, stride(), first_major{})];
+        return (*this)[index2offset(idx, stride(), column_major_layout<rank>{})];
     }
 
     /**
